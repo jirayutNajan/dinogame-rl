@@ -28,8 +28,8 @@ class DinoPlayer(pygame.sprite.Sprite):
             self.is_jumped = True
             self.jump_time_remain = self.jump_time
 
-    def sit(self):
-        if not self.is_jumped:
+    def sit(self, ground: pygame.Rect):
+        if not self.is_jumped and self.rect.colliderect(ground):
             self.rect.height = 25
             self.rect.y = 375
 
@@ -129,7 +129,7 @@ class DinoGame:
             # press and hold
             keys = pygame.key.get_pressed()
             if keys[pygame.K_DOWN]:
-                self.player.sit()
+                self.player.sit(self.ground)
             else:
                 self.player.stand(self.ground)
 
