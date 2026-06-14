@@ -12,16 +12,52 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BROWN = (94, 72, 43)
 
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height, color, speed) -> None:
+        super().__init__()
+
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.speed = speed
+
+    def draw(self, screen: pygame.Surface):
+        pygame.draw.rect(screen, self.color, self.rect)
+
+class Bird(Obstacle):
+    def __init__(self, x, y) -> None:
+        self.width = 20
+        self.height = 20
+        self.speed = 5
+        self.color = BROWN
+
+        super().__init__(x, y, self.width, self.height, self.color, self.speed)
+
+class Cactus(Obstacle):
+    def __init__(self, x, y) -> None:
+        self.width = 20
+        self.height = 20
+        self.speed = 5
+        self.color = GREEN
+
+        super().__init__(x, y, self.width, self.height, self.color, self.speed)
+
 class DinoPlayer(pygame.sprite.Sprite):
     def __init__(self) -> None:
         super().__init__()
 
-        self.rect = pygame.Rect(50, 350, 20, 50)
+        self.width = 30
+        self.height = 90
+        self.x = 50
+        self.y = 310
+
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.is_jumped = False
 
         self.jump_time = 10
         self.jump_time_remain = self.jump_time
         self.jump_speed = 10
+
+        self.spawn_obstacle_rate = None
 
     def jump(self, ground: pygame.Rect):
         if self.rect.colliderect(ground):
@@ -30,14 +66,14 @@ class DinoPlayer(pygame.sprite.Sprite):
 
     def sit(self, ground: pygame.Rect):
         if not self.is_jumped and self.rect.colliderect(ground):
-            self.rect.height = 25
-            self.rect.y = 375
+            self.rect.height = int(self.height/2)
+            self.rect.y = ground.y - int(self.height/2)
 
     def stand(self, ground: pygame.Rect):
         if not self.is_jumped:
-            self.rect.height = 50
+            self.rect.height = self.height
             if self.rect.colliderect(ground):
-                self.rect.y = 350
+                self.rect.y = self.y
 
     def update(self):
         if self.is_jumped:
@@ -49,7 +85,6 @@ class DinoPlayer(pygame.sprite.Sprite):
 
     def draw(self, screen: pygame.Surface):
         pygame.draw.rect(screen, GREEN, self.rect)
-
 
 class DinoGame:
     def __init__(self) -> None:
@@ -84,6 +119,7 @@ class DinoGame:
         self.update_logic()
 
     def update_logic(self):
+        # gravity
         if not self.player.rect.colliderect(self.ground) and not self.player.is_jumped:
             self.player.rect.y += self.gravity
         self.player.update()
@@ -128,6 +164,7 @@ class DinoGame:
 
             # press and hold
             keys = pygame.key.get_pressed()
+            # TODO: move this logic if else to update logic
             if keys[pygame.K_DOWN]:
                 self.player.sit(self.ground)
             else:
