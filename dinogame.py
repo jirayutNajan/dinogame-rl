@@ -15,18 +15,17 @@ BROWN = (94, 72, 43)
 GRAY = (128, 128, 128)
 
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, color, speed) -> None:
+    def __init__(self, x, y, width, height, color) -> None:
         super().__init__()
 
         self.rect = pygame.Rect(x, y, width, height)
         self.color = color
-        self.speed = speed
 
     def draw(self, screen: pygame.Surface):
         pygame.draw.rect(screen, self.color, self.rect)
 
-    def update(self):
-        self.rect.x -= self.speed
+    def update(self, speed):
+        self.rect.x -= speed
         if self.rect.x < -10:
             self.kill()
 
@@ -34,19 +33,17 @@ class Bird(Obstacle):
     def __init__(self, x, y) -> None:
         self.width = random.randint(20, 30)
         self.height = self.width
-        self.speed = 5
         self.color = BROWN
 
-        super().__init__(x, y, self.width, self.height, self.color, self.speed)
+        super().__init__(x, y, self.width, self.height, self.color)
 
 class Cactus(Obstacle):
     def __init__(self, x) -> None:
-        self.width = random.randint(20, 30)
-        self.height = random.randint(20, 70)
-        self.speed = 5
+        self.width = random.randint(20, 25)
+        self.height = random.randint(20, 55)
         self.color = GREEN
 
-        super().__init__(x, 400-self.height, self.width, self.height, self.color, self.speed)
+        super().__init__(x, 400-self.height, self.width, self.height, self.color)
 
 class DinoPlayer(pygame.sprite.Sprite):
     def __init__(self) -> None:
@@ -113,7 +110,8 @@ class DinoGame:
         self.ground = pygame.Rect(0, 400, WIDTH, 100)
 
         self.obtacles = pygame.sprite.Group()
-        self.spawn_obstacle_rate = 2000
+        self.spawn_obstacle_rate = 5000
+        self.obtacles_speed = 3
 
         self.game_over = False
         self.score = 0
@@ -123,6 +121,7 @@ class DinoGame:
         return self._get_observation()
 
     def spawn_obstacle(self):
+        # pygame.time.get_ticks() is game time of the game from the game start 1000 ticks mean 1 second
         current_time = pygame.time.get_ticks()
         if current_time - self.last_spawn_time > self.spawn_obstacle_rate:
             new_obstacle = None
@@ -130,10 +129,12 @@ class DinoGame:
                 new_obstacle = Bird(self.width, 310)
             else:
                 new_obstacle = Cactus(self.width)
+            if self.obtacles_speed < 20:
+                self.obtacles_speed += 0.2
 
             self.last_spawn_time = current_time
-            if(self.spawn_obstacle_rate > 200):
-                self.spawn_obstacle_rate -= 50
+            if(self.spawn_obstacle_rate > 1400):
+                self.spawn_obstacle_rate -= 2
             self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
@@ -152,9 +153,8 @@ class DinoGame:
 
             # update entity
             self.player.update()
-            self.obtacles.update()
+            self.obtacles.update(self.obtacles_speed)
             self.score += 0.5
-            print(self.score)
 
             self.spawn_obstacle()
 
@@ -180,6 +180,16 @@ class DinoGame:
         screen.blit(gameover_surface, gameover_rect)
         screen.blit(retry_surface, retry_rect)
 
+    def draw_score(self, screen: pygame.Surface):
+        font_score = pygame.font.SysFont("Arial", 30, bold=True)
+
+        score_surface = font_score.render(f"Score: {int(self.score)}", True, BLACK)
+
+        score_rect = score_surface.get_rect()
+        score_rect.topright = (self.width - 20, 20)
+
+        screen.blit(score_surface, score_rect)
+
     def render(self):
         if self.screen is None:
             pygame.init()
@@ -197,6 +207,9 @@ class DinoGame:
             obstacle.draw(self.screen)
         # render ground
         pygame.draw.rect(self.screen, BROWN, self.ground)
+
+        # ui
+        self.draw_score(self.screen)
 
         if self.game_over:
             self.draw_game_over(self.screen)
