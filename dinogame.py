@@ -1,5 +1,7 @@
+from enum import Enum
 import pygame
 import random
+import numpy as np
 
 # ============ CONSTANT ============
 WIDTH = 700
@@ -13,6 +15,12 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BROWN = (94, 72, 43)
 GRAY = (128, 128, 128)
+BLUE = (0, 0, 255)
+
+class Action(Enum):
+    IDLE = 0
+    JUMP = 1
+    SIT = 2
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, color) -> None:
@@ -108,6 +116,11 @@ class DinoGame:
     def reset(self):
         self.player = DinoPlayer()
         self.ground = pygame.Rect(0, 400, WIDTH, 100)
+        self.sensor_up = pygame.Rect(80, 310, 400, 20)
+        self.sensor_down = pygame.Rect(80, 380, 400, 20)
+
+        self.min_up_sensor = 999
+        self.min_down_sensor = 999
 
         self.obtacles = pygame.sprite.Group()
         self.spawn_obstacle_rate = 5000
@@ -118,6 +131,7 @@ class DinoGame:
 
         self.last_spawn_time = pygame.time.get_ticks()
 
+        # return observation for gymnasium
         return self._get_observation()
 
     def spawn_obstacle(self):
@@ -138,12 +152,32 @@ class DinoGame:
             self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
-        pass
+        observation = np.array([
+            self.obtacles_speed,
+            self.min_up_sensor,
+            self.min_down_sensor
+        ], dtype=np.float32)
+
+        return observation
 
     def take_action(self, action:int|None=None):
         # action is jump or sit for player, type of int
+        if action == Action.JUMP:
+            self.player.jump(self.ground)
+        elif action == Action.SIT:
+            self.player.sit(self.ground)
+        else:
+            self.player.stand(self.ground)
+
         self.update_logic()
-        return self._get_observation()
+
+        reward = 0
+        if self.game_over:
+            reward = -10
+        else:
+            reward = 10
+
+        return self._get_observation(), reward, self.game_over, False, {"score": self.score}
 
     def update_logic(self):
         if not self.game_over:
@@ -162,6 +196,16 @@ class DinoGame:
                 if self.player.rect.colliderect(obstacle):
                     self.game_over = True
                     break
+
+            # check for sensor
+            if len(self.obtacles) != 0:
+                for obstacle in self.obtacles:
+                    if obstacle.rect.colliderect(self.sensor_up):
+                        if obstacle.rect.x - self.sensor_up.x < self.min_up_sensor:
+                            self.min_up_sensor = obstacle.rect.x - self.sensor_up.x
+                    if obstacle.rect.colliderect(self.sensor_down):
+                        if obstacle.rect.x - self.sensor_down.x < self.min_down_sensor:
+                            self.min_down_sensor = obstacle.rect.x - self.sensor_up.x
 
     def draw_game_over(self, screen: pygame.Surface):
         font_large = pygame.font.SysFont("Arial", 60, bold=True)
@@ -206,7 +250,11 @@ class DinoGame:
         for obstacle in self.obtacles:
             obstacle.draw(self.screen)
         # render ground
-        pygame.draw.rect(self.screen, BROWN, self.ground)
+        pygame.draw.rect(self.screen, GREEN, self.ground)
+
+        # draw sensor
+        # pygame.draw.rect(self.screen, BLUE, self.sensor_up)
+        # pygame.draw.rect(self.screen, BLUE, self.sensor_down)
 
         # ui
         self.draw_score(self.screen)
@@ -240,7 +288,6 @@ class DinoGame:
 
                 # press and hold
                 keys = pygame.key.get_pressed()
-                # TODO: move this logic if else to update logic
                 if keys[pygame.K_DOWN]:
                     self.player.sit(self.ground)
                 else:
@@ -256,6 +303,11 @@ class DinoGame:
                             self.reset()
 
             self.render()
+
+    def close(self):
+        if self.screen is not None:
+            pygame.quit()
+            self.screen = None
 
 def main():
     game = DinoGame()
