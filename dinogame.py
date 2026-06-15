@@ -136,6 +136,7 @@ class DinoGame:
 
     def spawn_obstacle(self):
         # pygame.time.get_ticks() is game time of the game from the game start 1000 ticks mean 1 second
+        # TODO: this is time base (1 second) fix this to frame base for training ai faster
         current_time = pygame.time.get_ticks()
         if current_time - self.last_spawn_time > self.spawn_obstacle_rate:
             new_obstacle = None
@@ -166,13 +167,13 @@ class DinoGame:
             self.player.jump(self.ground)
         elif action == Action.SIT:
             self.player.sit(self.ground)
-        else:
+        elif action == Action.IDLE:
             self.player.stand(self.ground)
 
         self.update_logic()
 
         reward = 0
-        SAFE_DISTANCE = 100
+        SAFE_DISTANCE = 50
 
         is_obstacle_near = (self.min_up_sensor < SAFE_DISTANCE) or (self.min_down_sensor < SAFE_DISTANCE)
 
@@ -200,7 +201,7 @@ class DinoGame:
 
     def update_logic(self):
         if not self.game_over:
-            # gravity
+            # gravity (FRAME BASED)
             if not self.player.rect.colliderect(self.ground) and not self.player.is_jumped:
                 self.player.rect.y += self.gravity
 
@@ -218,6 +219,8 @@ class DinoGame:
 
             # check for sensor
             if len(self.obtacles) != 0:
+                self.min_down_sensor = 999
+                self.min_up_sensor = 999
                 for obstacle in self.obtacles:
                     if obstacle.rect.colliderect(self.sensor_up):
                         if obstacle.rect.x - self.sensor_up.x < self.min_up_sensor:
@@ -225,6 +228,9 @@ class DinoGame:
                     if obstacle.rect.colliderect(self.sensor_down):
                         if obstacle.rect.x - self.sensor_down.x < self.min_down_sensor:
                             self.min_down_sensor = obstacle.rect.x - self.sensor_up.x
+            else:
+                self.min_down_sensor = 999
+                self.min_up_sensor = 999
 
     def draw_game_over(self, screen: pygame.Surface):
         font_large = pygame.font.SysFont("Arial", 60, bold=True)

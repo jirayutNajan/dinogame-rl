@@ -1,6 +1,7 @@
 snake.py
 snake_env.py
 .venv
+__pycache__
 
 notes.txt
 gymnasiumtest.py
