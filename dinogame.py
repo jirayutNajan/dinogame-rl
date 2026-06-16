@@ -170,9 +170,9 @@ class DinoGame:
 
     def _get_observation(self):
         observation = np.array([
-            self.obtacles_speed,
-            self.min_up_sensor,
-            self.min_down_sensor
+            self.obtacles_speed / 20,
+            self.min_up_sensor / 999,
+            self.min_down_sensor / 999,
         ], dtype=np.float32)
 
         return observation
@@ -195,18 +195,18 @@ class DinoGame:
         # print(self.min_up_sensor, self.min_down_sensor, is_obstacle_near)
 
         if self.game_over:
-            reward = -500
+            reward = -300
         else:
             # reward each step
-            reward = 0.05
+            reward = 0.1
             # danger
             if is_obstacle_near:
                 if not (action == Action.JUMP or action == Action.SIT):
-                    reward -= 1
+                    reward -= 5
             else:
                 # punish if action on safe sapce
                 if action == Action.JUMP or action == Action.SIT:
-                    reward -= 1
+                    reward -= 5
 
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
