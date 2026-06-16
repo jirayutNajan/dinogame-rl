@@ -35,7 +35,6 @@ class DinoGameEnv(gym.Env):
         if seed is not None:
             np.random.seed(seed)
 
-        self.total_reward = 0
         observation = self.game.reset()
         info = {"score": self.game.score}
 
@@ -53,10 +52,8 @@ class DinoGameEnv(gym.Env):
 
         # truncate คือเงื่อนไขบังคับจบเกม แบบไม่ใช่้ game over
         observation, reward, terminated, truncated, info = self.game.take_action(game_action)
-        self.total_reward += reward
         
         if self.render_mode == "human":
-            print(f"Total Reward: {self.total_reward:.2f}")
             self.render()
 
         return observation, reward, terminated, truncated, info
