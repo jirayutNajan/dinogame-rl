@@ -188,25 +188,15 @@ class DinoGame:
 
         self.update_logic()
 
-        reward = 0
-        DANGER_DISTANCE = 50
-
-        is_obstacle_near = (self.min_up_sensor < DANGER_DISTANCE) or (self.min_down_sensor < DANGER_DISTANCE)
-        # print(self.min_up_sensor, self.min_down_sensor, is_obstacle_near)
-
         if self.game_over:
-            reward = -300
+            reward = -100
         else:
-            # reward each step
-            reward = 0.1
-            # danger
-            if is_obstacle_near:
-                if not (action == Action.JUMP or action == Action.SIT):
-                    reward -= 5
-            else:
-                # punish if action on safe sapce
-                if action == Action.JUMP or action == Action.SIT:
-                    reward -= 5
+            reward = 1.0
+
+            if action == Action.JUMP or action == Action.SIT:
+                reward -= 0.05 
+
+        return self._get_observation(), reward, self.game_over, False, {"score": self.score}
 
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
