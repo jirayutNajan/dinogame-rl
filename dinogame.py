@@ -47,8 +47,8 @@ class Bird(Obstacle):
 
 class Cactus(Obstacle):
     def __init__(self, x) -> None:
-        self.width = random.randint(20, 25)
-        self.height = random.randint(20, 55)
+        self.width = random.randint(15, 20)
+        self.height = random.randint(20, 50)
         self.color = GREEN
 
         super().__init__(x, 400-self.height, self.width, self.height, self.color)
@@ -123,22 +123,22 @@ class DinoGame:
         self.min_down_sensor = 999
 
         self.obtacles = pygame.sprite.Group()
-        self.spawn_obstacle_rate = 5000
+        self.spawn_obstacle_rate = 100
+        self.spawn_obstacle_cool_down = self.spawn_obstacle_rate
+
         self.obtacles_speed = 3
 
         self.game_over = False
         self.score = 0
-
-        self.last_spawn_time = pygame.time.get_ticks()
 
         # return observation for gymnasium
         return self._get_observation()
 
     def spawn_obstacle(self):
         # pygame.time.get_ticks() is game time of the game from the game start 1000 ticks mean 1 second
-        # TODO: this is time base (1 second) fix this to frame base for training ai faster
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_spawn_time > self.spawn_obstacle_rate:
+        self.spawn_obstacle_cool_down -= 1
+        print(self.spawn_obstacle_cool_down)
+        if self.spawn_obstacle_cool_down <= 0:
             new_obstacle = None
             if random.random() > 0.5:
                 new_obstacle = Bird(self.width, 310)
@@ -147,9 +147,9 @@ class DinoGame:
             if self.obtacles_speed < 20:
                 self.obtacles_speed += 0.2
 
-            self.last_spawn_time = current_time
-            if(self.spawn_obstacle_rate > 1400):
-                self.spawn_obstacle_rate -= 2
+            if(self.spawn_obstacle_rate > 20):
+                self.spawn_obstacle_rate -= 0.2
+            self.spawn_obstacle_cool_down = self.spawn_obstacle_rate
             self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
@@ -177,6 +177,7 @@ class DinoGame:
 
         is_obstacle_near = (self.min_up_sensor < SAFE_DISTANCE) or (self.min_down_sensor < SAFE_DISTANCE)
 
+        # TODO: fix reward model
         if self.game_over:
             reward = -100
         else:
