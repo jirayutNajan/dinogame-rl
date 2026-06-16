@@ -188,16 +188,14 @@ class DinoGame:
 
         self.update_logic()
 
+        # LET AI FIGURE IT OUT BY ITSELF
         if self.game_over:
-            reward = -100
+            reward = -300
         else:
-            reward = 1.0
+            reward = 0.1
 
             if action == Action.JUMP or action == Action.SIT:
-                reward -= 0.05 
-
-        return self._get_observation(), reward, self.game_over, False, {"score": self.score}
-
+                reward -= 0.5
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
 
