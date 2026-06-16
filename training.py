@@ -2,9 +2,9 @@ from stable_baselines3 import PPO
 from gymnesium_env import DinoGameEnv
 
 def train_dino(timesteps=100000, render=False):
-    """Train Snake AI with PPO"""
+    """Train dinao AI with PPO"""
 
-    print("Training Snake with PPO")
+    print("Training dinao with PPO")
     print(f"Total timesteps: {timesteps}")
     print("-" * 40)
 
@@ -28,13 +28,13 @@ def train_dino(timesteps=100000, render=False):
     model.learn(total_timesteps=timesteps)
 
     # Save the model
-    model.save("snake_model")
-    print("Model saved as 'snake_model'")
+    model.save("dinao_model")
+    print("Model saved as 'dinao_model'")
 
     env.close()
     return model
 
-def play_trained_model(model_path="snake_model", episodes=5):
+def play_trained_model(model_path="dinao_model", episodes=5):
     """Watch the trained model play"""
 
     print(f"Loading model: {model_path}")
@@ -89,7 +89,7 @@ def main():
         train_dino(timesteps, render)
     elif sys.argv[1] == "play":
         # Play trained model
-        model_path = sys.argv[2] if len(sys.argv) > 2 else "snake_model"
+        model_path = sys.argv[2] if len(sys.argv) > 2 else "dinao_model"
         episodes = int(sys.argv[3]) if len(sys.argv) > 3 else 5
         play_trained_model(model_path, episodes)
     else:
@@ -98,7 +98,7 @@ def main():
         print("  python trainning.py train 200000       # Train for 200k steps")
         print("  python trainning.py train 50000 --render # Train with rendering")
         print("  python trainning.py play               # Watch trained model")
-        print("  python trainning.py play snake_model 3 # Watch model play 3 games")
+        print("  python trainning.py play dinao_model 3 # Watch model play 3 games")
 
 if __name__ == "__main__":
     main()

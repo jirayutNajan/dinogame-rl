@@ -116,8 +116,8 @@ class DinoGame:
     def reset(self):
         self.player = DinoPlayer()
         self.ground = pygame.Rect(0, 400, WIDTH, 100)
-        self.sensor_up = pygame.Rect(80, 310, 400, 20)
-        self.sensor_down = pygame.Rect(80, 380, 400, 20)
+        self.sensor_up = pygame.Rect(0, 310, 600, 20)
+        self.sensor_down = pygame.Rect(0, 380, 600, 20)
 
         self.min_up_sensor = 999
         self.min_down_sensor = 999
@@ -137,7 +137,6 @@ class DinoGame:
     def spawn_obstacle(self):
         # pygame.time.get_ticks() is game time of the game from the game start 1000 ticks mean 1 second
         self.spawn_obstacle_cool_down -= 1
-        print(self.spawn_obstacle_cool_down)
         if self.spawn_obstacle_cool_down <= 0:
             new_obstacle = None
             if random.random() > 0.5:
@@ -173,29 +172,29 @@ class DinoGame:
         self.update_logic()
 
         reward = 0
-        SAFE_DISTANCE = 50
+        DANGER_DISTANCE = 100
 
-        is_obstacle_near = (self.min_up_sensor < SAFE_DISTANCE) or (self.min_down_sensor < SAFE_DISTANCE)
+        is_obstacle_near = (self.min_up_sensor < DANGER_DISTANCE) or (self.min_down_sensor < DANGER_DISTANCE)
+        # print(self.min_up_sensor, self.min_down_sensor, is_obstacle_near)
 
-        # TODO: fix reward model
         if self.game_over:
             reward = -100
         else:
             # reward each step
-            reward = 1
+            reward = 0.02
             # danger
             if is_obstacle_near:
                 if action == Action.JUMP or action == Action.SIT:
-                    reward += 15
+                    reward += 0.5
                 # punish if do nothing
                 else:
-                    reward -= 5
+                    reward -= 1
             else:
                 # punish if action on safe sapce
                 if action == Action.JUMP or action == Action.SIT:
-                    reward -= 10
+                    reward -= 1
                 else:
-                    reward += 5
+                    reward += 0.5
 
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}

@@ -20,7 +20,7 @@ class DinoGameEnv(gym.Env):
 
         # observation space
         self.observation_space = spaces.Box(
-            low=np.array([0.0, -20.0, -20.0], dtype=np.float32),
+            low=np.array([0.0, -10.0, -10.0], dtype=np.float32),
             high=np.array([20.0, 999.0, 999.0], dtype=np.float32),
             dtype=np.float32
         )
