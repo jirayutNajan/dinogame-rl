@@ -128,6 +128,8 @@ class DinoGame:
 
         self.obtacles_speed = 3
 
+        # self.last_spawn_time = pygame.time.get_ticks()
+
         self.game_over = False
         self.score = 0
 
@@ -135,7 +137,6 @@ class DinoGame:
         return self._get_observation()
 
     def spawn_obstacle(self):
-        # pygame.time.get_ticks() is game time of the game from the game start 1000 ticks mean 1 second
         self.spawn_obstacle_cool_down -= 1
         if self.spawn_obstacle_cool_down <= 0:
             new_obstacle = None
@@ -150,6 +151,22 @@ class DinoGame:
                 self.spawn_obstacle_rate -= 0.2
             self.spawn_obstacle_cool_down = self.spawn_obstacle_rate
             self.obtacles.add(new_obstacle)
+
+        # old timebase spawn
+        # current_time = pygame.time.get_ticks()
+        # if current_time - self.last_spawn_time > self.spawn_obstacle_rate:
+        #     new_obstacle = None
+        #     if random.random() > 0.5:
+        #         new_obstacle = Bird(self.width, 310)
+        #     else:
+        #         new_obstacle = Cactus(self.width)
+        #     if self.obtacles_speed < 20:
+        #         self.obtacles_speed += 0.2
+        #
+        #     self.last_spawn_time = current_time
+        #     if(self.spawn_obstacle_rate > 1400):
+        #         self.spawn_obstacle_rate -= 2
+        #     self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
         observation = np.array([
