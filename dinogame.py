@@ -124,7 +124,7 @@ class DinoGame:
 
         self.obtacles = pygame.sprite.Group()
         self.spawn_obstacle_rate = 100
-        self.spawn_obstacle_cool_down = self.spawn_obstacle_rate
+        self.spawn_obstacle_cool_down = 20 # faster first spawn
 
         self.obtacles_speed = 3
 
@@ -169,10 +169,12 @@ class DinoGame:
         #     self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
+        # TODO: observation of nearest obstacle
         observation = np.array([
             self.obtacles_speed / 20,
             self.min_up_sensor / 999,
             self.min_down_sensor / 999,
+            (self.player.rect.y / self.player.rect.height) / 3,
         ], dtype=np.float32)
 
         return observation
@@ -193,9 +195,6 @@ class DinoGame:
             reward = -300
         else:
             reward = 0.1
-
-            if action == Action.JUMP or action == Action.SIT:
-                reward -= 0.5
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
 
