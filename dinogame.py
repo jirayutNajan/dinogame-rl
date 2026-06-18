@@ -192,9 +192,11 @@ class DinoGame:
 
         # LET AI FIGURE IT OUT BY ITSELF
         if self.game_over:
-            reward = -300
+            reward = -10
         else:
-            reward = 0.1
+            # reward = 0.5
+            if self.spawn_obstacle_cool_down <= 0:
+                reward = 10
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
 

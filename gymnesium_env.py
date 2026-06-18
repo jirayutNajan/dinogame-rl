@@ -21,7 +21,7 @@ class DinoGameEnv(gym.Env):
         # observation space
         self.observation_space = spaces.Box(
             low=np.array([0.0, -1.0, -1.0, 0], dtype=np.float32),
-            high=np.array([1.0, 1.0, 1.0, 3], dtype=np.float32),
+            high=np.array([1.0, 1.0, 1.0, 1.5], dtype=np.float32),
             dtype=np.float32
         )
 
@@ -46,13 +46,13 @@ class DinoGameEnv(gym.Env):
     def step(self, action):
         # map integer action to Action enum
         game_action = Action(action)
-        
+
         if self.render_mode == "human":
             print(f"AI Action: {game_action.name}")
 
         # truncate คือเงื่อนไขบังคับจบเกม แบบไม่ใช่้ game over
         observation, reward, terminated, truncated, info = self.game.take_action(game_action)
-        
+
         if self.render_mode == "human":
             self.render()
 
