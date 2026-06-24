@@ -116,8 +116,8 @@ class DinoGame:
     def reset(self):
         self.player = DinoPlayer()
         self.ground = pygame.Rect(0, 400, WIDTH, 100)
-        self.sensor_up = pygame.Rect(0, 310, 600, 20)
-        self.sensor_down = pygame.Rect(0, 380, 600, 20)
+        self.sensor_up = pygame.Rect(0, 310, WIDTH, 20)
+        self.sensor_down = pygame.Rect(0, 380, WIDTH, 20)
 
         self.min_up_sensor = WIDTH
         self.min_down_sensor = WIDTH
@@ -169,7 +169,6 @@ class DinoGame:
         #     self.obtacles.add(new_obstacle)
 
     def _get_observation(self):
-        # TODO: observation of nearest obstacle
         observation = np.array([
             self.obtacles_speed / 20,
             (self.min_up_sensor+10) / (WIDTH+10),
@@ -196,7 +195,8 @@ class DinoGame:
             reward = -10
         else:
             # reward = 0.5
-            if self.spawn_obstacle_cool_down <= 0:
+            obstacles_list = self.obtacles.sprites()
+            if obstacles_list and obstacles_list[0].rect.x <= -8:
                 reward = 10
 
         return self._get_observation(), reward, self.game_over, False, {"score": self.score}
